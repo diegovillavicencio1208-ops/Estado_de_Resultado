@@ -1,8 +1,8 @@
-# 📊 Estado de Resultados (P&L) — Power BI
+# 📊 Estado de Resultados (P&L) - Power BI
 
 Proyecto de Business Intelligence que implementa un Estado de Resultados interactivo en Power BI utilizando únicamente visuales nativos, una tabla auxiliar y medidas DAX.
 
-> Basado en el artículo y tutorial de **[Valerie Junk](https://www.valeriejunk.nl/profit-and-loss-statement-in-power-bi/)** — *Profit and Loss Statement in Power BI*. El enfoque estructural, el patrón de Helper Table y la lógica del Switch DAX provienen de su trabajo original. Esta implementación adapta el modelo al español, extiende la lógica comparativa año actual vs. año anterior con títulos dinámicos, y simplifica la medida Switch eliminando la variable `isPLID`.
+> Basado en el artículo y tutorial de **[Valerie Junk](https://www.valeriejunk.nl/profit-and-loss-statement-in-power-bi/)** - *Profit and Loss Statement in Power BI*. El enfoque estructural, el patrón de Helper Table y la lógica del Switch DAX provienen de su trabajo original. Esta implementación adapta el modelo al español, extiende la lógica comparativa año actual vs. año anterior con títulos dinámicos, y simplifica la medida Switch eliminando la variable `isPLID`.
 
 
 ---
@@ -21,8 +21,8 @@ Proyecto de Business Intelligence que implementa un Estado de Resultados interac
 
 El dashboard presenta el Estado de Resultados de una empresa en dos vistas complementarias:
 
-- **Desglose mensual** — Ingresos, costos y utilidades columna por columna por cada mes del año seleccionado.
-- **Análisis comparativo** — Año actual vs. año anterior vs. diferencia (Δ), con títulos que se actualizan automáticamente según los datos disponibles.
+- **Desglose mensual** - Ingresos, costos y utilidades columna por columna por cada mes del año seleccionado.
+- **Análisis comparativo** - Año actual vs. año anterior vs. diferencia (Δ), con títulos que se actualizan automáticamente según los datos disponibles.
 
 Ambas matrices comparten la misma jerarquía de filas definida por la `Tabla_Auxiliar_PyG`, que controla el orden, las categorías y las filas calculadas del estado de resultados.
 
@@ -49,7 +49,7 @@ Dim_Cuenta ─────────────── Fct_Transacciones ─�
                    (conectada vía ID_Cuenta)          │
                                                       │
 P&L Auxiliar ────────────────────────────────────────┘
-(tabla desconectada — slicer de vista comparativa)
+(tabla desconectada - slicer de vista comparativa)
 ```
 
 ---
@@ -78,7 +78,7 @@ Define el layout de la matriz: qué filas aparecen, en qué orden y bajo qué ca
 | 999 | Virtual | Utilidad Bruta (calculada) |
 
 ### `P&L Auxiliar`
-Tabla desconectada de 3 filas usada como slicer de la matriz comparativa. Sus valores (`Año Actual`, `Año Anterior`, `Diff`) se generan dinámicamente desde los datos — no son texto fijo.
+Tabla desconectada de 3 filas usada como slicer de la matriz comparativa. Sus valores (`Año Actual`, `Año Anterior`, `Diff`) se generan dinámicamente desde los datos - no son texto fijo.
 
 ---
 
@@ -88,7 +88,7 @@ Las medidas están organizadas en 6 capas de construcción. Solo se documentan l
 
 ---
 
-### Capa 1 — Medida base
+### Capa 1 - Medida base
 
 #### `Monto Total (Bruto)`
 - **Carpeta:** Ingresos
@@ -102,7 +102,7 @@ SUM(Fct_Transacciones[Monto])
 
 ---
 
-### Capa 2 — Medidas por cuenta (Año Actual)
+### Capa 2 - Medidas por cuenta (Año Actual)
 
 Filtran `Monto Total (Bruto)` por nombre de cuenta. Los costos multiplican por `-1` para invertir el signo negativo del origen.
 
@@ -188,7 +188,7 @@ CALCULATE(
 
 ---
 
-### Capa 3 — Medidas agregadas (Año Actual)
+### Capa 3 - Medidas agregadas (Año Actual)
 
 Combinan las medidas base para producir totales y KPIs calculados del P&L.
 
@@ -240,7 +240,7 @@ Utilidad neta =
 
 ---
 
-### Capa 4 — Medidas Año Anterior
+### Capa 4 - Medidas Año Anterior
 
 Todas usan `SAMEPERIODLASTYEAR` sobre `DIM_Calendario[Fecha]` para trasladar el contexto al mismo período del año anterior.
 
@@ -322,7 +322,7 @@ Costo de Instalaciones (Año Anterior)
 
 ---
 
-### Capa 5 — Medidas Delta (Tarjetas del header)
+### Capa 5 - Medidas Delta (Tarjetas del header)
 
 Generan el texto `(🡹 X,XXX $)` o `(🡻 X,XXX $)` que aparece como subtítulo en las tarjetas KPI. Usan `UNICHAR(129145)` (🡹) y `UNICHAR(129147)` (🡻).
 
@@ -371,11 +371,11 @@ VAR _Arrow = IF(_Valores >= 0, UNICHAR(129145), UNICHAR(129147))
 RETURN "(" & _Arrow & " " & FORMAT(_Valores, "#,0 $") & ")"
 ```
 
-> Las versiones `(Sin formato)` de estas mismas medidas (`Diferencia Ingresos (Sin formato)`, etc.) devuelven el valor numérico sin texto. Se usan para formato condicional de color en las tarjetas — si el valor es positivo la etiqueta se colorea verde, si es negativo roja.
+> Las versiones `(Sin formato)` de estas mismas medidas (`Diferencia Ingresos (Sin formato)`, etc.) devuelven el valor numérico sin texto. Se usan para formato condicional de color en las tarjetas - si el valor es positivo la etiqueta se colorea verde, si es negativo roja.
 
 ---
 
-### Capa 6 — Medidas Switch (Motor de la Matriz)
+### Capa 6 - Medidas Switch (Motor de la Matriz)
 
 Son el corazón del dashboard. Permiten que una sola columna de valores en la matriz muestre líneas heterogéneas del P&L.
 
@@ -455,7 +455,7 @@ IF(
 
 #### `P&L Switch UltimoAño/AñoAnterior/Diff`
 - **Carpeta:** Matriz
-- **Descripción:** **Medida final de la matriz comparativa.** Lee el valor del slicer `P&L Auxiliar[Categoria]` y decide qué devolver: año actual, año anterior o diferencia. Los valores del slicer no son texto fijo sino que se generan dinámicamente desde `[Ultima fecha]` — si los datos van hasta 2024, el slicer muestra "2024", "2023" y "Diff". El ID 997 (Margen Bruto %) recibe formato de porcentaje; el resto se formatea como moneda.
+- **Descripción:** **Medida final de la matriz comparativa.** Lee el valor del slicer `P&L Auxiliar[Categoria]` y decide qué devolver: año actual, año anterior o diferencia. Los valores del slicer no son texto fijo sino que se generan dinámicamente desde `[Ultima fecha]` - si los datos van hasta 2024, el slicer muestra "2024", "2023" y "Diff". El ID 997 (Margen Bruto %) recibe formato de porcentaje; el resto se formatea como moneda.
 ```dax
 P&L Switch UltimoAño/AñoAnterior/Diff = 
 VAR ViewType = SELECTEDVALUE('P&L Auxiliar'[Categoria])
@@ -534,9 +534,9 @@ Fondo Transparente = "rgba(0,0,0,0)"
 | Aspecto | Versión original | Esta implementación |
 |---|---|---|
 | **Idioma** | Inglés | Español |
-| **Medida Switch** | Usa `isPLID` + `HASONEVALUE` para distinguir filas de detalle vs. encabezado de categoría | Simplificada con `SUMX` directo — `HASONEVALUE` eliminado ya que en una jerarquía de dos niveles bien definida el contexto siempre es limpio |
-| **Slicer comparativo** | Valores de texto fijos ("TY", "LY", "Delta") | Valores dinámicos generados desde `[Ultima fecha]` — el slicer muestra los años reales de los datos |
-| **Títulos** | Estáticos | Dinámicos — se actualizan automáticamente con el año del último dato cargado |
+| **Medida Switch** | Usa `isPLID` + `HASONEVALUE` para distinguir filas de detalle vs. encabezado de categoría | Simplificada con `SUMX` directo - `HASONEVALUE` eliminado ya que en una jerarquía de dos niveles bien definida el contexto siempre es limpio |
+| **Slicer comparativo** | Valores de texto fijos ("TY", "LY", "Delta") | Valores dinámicos generados desde `[Ultima fecha]` - el slicer muestra los años reales de los datos |
+| **Títulos** | Estáticos | Dinámicos - se actualizan automáticamente con el año del último dato cargado |
 | **IDs virtuales** | 991, 992, 993 | 997, 998, 999 |
 | **Nombres de medidas** | En inglés (Revenue, COGS, Net Profit) | Adaptados al contexto contable en español |
 
